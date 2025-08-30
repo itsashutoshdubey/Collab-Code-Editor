@@ -1,37 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../App.css';
 import Avatar from 'react-avatar'
 import Editor from "@monaco-editor/react";
+import { io } from "socket.io-client";
+import { useLocation, useParams } from 'react-router-dom';
 
 
 const EditorPage = () => {
   const [language, setLanguage] = useState('cpp');
+  const socketRef = useRef(null);
+  const location = useLocation();
+  const { roomId } = useParams();
+  const [clients, setClients] = useState([]);
+
+  useEffect(() => {
+    socketRef.current = io("http://localhost:5000", {
+      //transports: ["websocket"],
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log(" Connected to server:", socketRef.current.id);
+    });
+
+    socketRef.current.emit("join", {
+       roomId,
+       username: location.state?.username ,
+      });
+
+   
+    socketRef.current.on("room-users", (clients) => {
+      console.log("Users in room:", clients);
+     
+      setClients(clients);
+    });
+
+        // Receive changes from server
+      socketRef.current.on("code-change", ({ changes, versionId: incomingVersionId }) => {
+        // Ignore if this change originated from this client
+        if (incomingVersionId <= editor.getModel().getVersionId()) return;
+
+        editor.getModel().applyEdits(
+          changes.map(c => ({
+            range: new monaco.Range(
+              c.range.startLineNumber,
+              c.range.startColumn,
+              c.range.endLineNumber,
+              c.range.endColumn
+            ),
+            text: c.text,
+            forceMoveMarkers: true
+          }))
+        );
+      });
+
+
+    socketRef.current.on("disconnect", () => {
+      console.log(" Disconnected from server");
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, []);
+
 
   const handleLeave = () => {
     // You can add your leave logic here (e.g., navigate away, disconnect socket)
+    socketRef.current.disconnect();
   };
 
   
 
-  const handleEditorDidMount = (editor, monaco) => {
-    editor.onDidChangeModelContent((event) => {
-      console.log("Diff:", event.changes);
-    });
-  };
+  
+    
+    const handleEditorDidMount = (editor, monaco) => {
+      // Send changes to server
+      editor.onDidChangeModelContent((event) => {
+        socketRef.current.emit("code-change", {
+          roomId,
+          changes: event.changes,      // Only the changes
+          versionId: editor.getModel().getVersionId()
+        });
+      });
+    };
+
+  
+    
+
+  
 
 
 
-  const [clients, setClients] = useState([
-    { socketId: 1, username: 'User1' },
-    { socketId: 2, username: 'User2' },
-    { socketId: 3, username: 'User3' },
-    { socketId: 1, username: 'User1' },
-    { socketId: 2, username: 'User2' },
-    { socketId: 3, username: 'User3' },
-    { socketId: 1, username: 'User1' },
-    { socketId: 2, username: 'User2' },
-    { socketId: 3, username: 'User3' },
-]);
+  
 
   return (
     <div className="editor-container">
@@ -45,9 +105,9 @@ const EditorPage = () => {
           <h3> Connected Users</h3>
 
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-            {clients.map((client) => (
+            {clients.map((clients) => (
               <div
-                key={client.socketId}
+                key={clients.socketId} // unique key
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -57,9 +117,9 @@ const EditorPage = () => {
                   borderRadius: "10px",
                 }}
               >
-                <Avatar name={client.username} size="50" round={true} />
+                <Avatar name={clients.username} size="50" round={true} />
                 <span style={{ marginTop: "6px", fontSize: "14px" }}>
-                  {client.username}
+                  {clients.username}
                 </span>
               </div>
             ))}
