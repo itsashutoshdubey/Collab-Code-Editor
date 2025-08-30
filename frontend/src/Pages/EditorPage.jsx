@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import '../App.css';
 import Avatar from 'react-avatar'
+import Editor from "@monaco-editor/react";
+
 
 const EditorPage = () => {
   const [language, setLanguage] = useState('cpp');
@@ -8,6 +10,16 @@ const EditorPage = () => {
   const handleLeave = () => {
     // You can add your leave logic here (e.g., navigate away, disconnect socket)
   };
+
+  
+
+  const handleEditorDidMount = (editor, monaco) => {
+    editor.onDidChangeModelContent((event) => {
+      console.log("Diff:", event.changes);
+    });
+  };
+
+
 
   const [clients, setClients] = useState([
     { socketId: 1, username: 'User1' },
@@ -73,9 +85,17 @@ const EditorPage = () => {
           </select>
         </div>
 
-        <div className="code-area">
-          {/* Monaco Editor will be mounted here */}
+        <div className="code-area" style={{ height: "500px" }}>
+          <Editor
+            height="100%"
+            language={language}  
+            theme="vs-dark"
+            defaultValue="// Start coding here..."
+           
+            onMount={handleEditorDidMount}
+          />
         </div>
+
 
         <div className="leave-button-container">
           <button onClick={handleLeave}>Leave Room</button>
