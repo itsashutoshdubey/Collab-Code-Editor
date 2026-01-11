@@ -14,8 +14,6 @@ const Home = () => {
       toast.error('Room ID and Username are required');
       return;  
     }
-
-    
     navigate(`/editor/${roomId}`, {
       state: { username },
     });
