@@ -1,7 +1,12 @@
-import { exec } from 'child_process/promises'; // Direct promise support
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+
+// 1. Correct way to get Promise support for exec
+const execPromise = promisify(exec);
+
 
 
 // Recreating __dirname for ES6
@@ -21,7 +26,7 @@ const __dirname = path.dirname(__filename);
 async function executeCommand(dockerCommand, timeout = 5000) {
     try {
         // The promise-based exec returns an object with stdout and stderr directly
-        const { stdout, stderr } = await exec(dockerCommand, { timeout: timeout });
+        const { stdout, stderr } = await execPromise(dockerCommand, { timeout: timeout });
 
         return { stdout, stderr };
     } catch (error) {

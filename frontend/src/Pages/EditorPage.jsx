@@ -146,7 +146,7 @@ Their Binding sees the yText has changed and tells Monaco to "paint" the new let
     let SubmitRes = axios.post('http://localhost:5000/api/execute', {
       code: SubmittedCode,
       language: language ,
-      socketId: socketRef.current
+      socketId: socketRef.current.id
     });
     console.log("Submission response:", SubmitRes);
   };

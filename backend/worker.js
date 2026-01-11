@@ -5,7 +5,7 @@ import {executeCode} from './executeCode.js';
 
 // 1. Create a single connection instance
 const connection = new IORedis({
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 6379,
     maxRetriesPerRequest: null
 });
@@ -34,10 +34,10 @@ catch (error) {
 }); 
 
 
-worker.on('completed', (job) => {
-    console.log(`${job.id} has completed!`);
+worker.on('ready', () => {
+    console.log(' Worker has successfully connected to Redis!');
 });
 
-worker.on('failed', (job, err) => {
-    console.log(`${job.id} has failed with ${err.message}`);
+worker.on('error', (err) => {
+    console.error(' Worker connection error:', err);
 });

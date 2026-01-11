@@ -37,13 +37,13 @@ ysocketio.initialize();
 //initialize a queue 
 const executionQueue = new Queue('execute-code', {
   connection: {
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 6379
   }
     });
 // producer of jobs
 async function addJob(code, language, socketId) {
-  const uniqueJobId = `${socketId}:${Date.now()}`;
+  const uniqueJobId = `${socketId}-${Date.now()}`;
   return await executionQueue.add('code-execution', {
     codeToExecute: code,
     languageToExecute: language, 
@@ -60,6 +60,7 @@ app.post('/api/execute', async(req, res)=>{
 const {code, language, socketId} = req.body;
 console.log("Code received for execution:", code);
 console.log("Language:", language);
+
 const job = await addJob(code, language, socketId);
 console.log("Job added to queue with ID:", job.id);
   return res.status(202).json({ jobId: job.id }); // 202 means "Accepted for processing"
@@ -69,13 +70,13 @@ console.log("Job added to queue with ID:", job.id);
 // 1. QueueEvents Listener: This is the "Bridge"
 // It listens globally for any job finishing and pushes the result to the user
 const queueEvents = new QueueEvents('execute-code', { connection:{
-  host: 'localhost',
+  host: '127.0.0.1',
   port: 6379
 } });
 
 queueEvents.on('completed', ({ jobId, returnvalue }) => {
   // Extract socketId from the jobId format "socketId-timestamp"
-  const socketId = jobId.split(':')[0];
+  const socketId = jobId.split('-')[0];
   console.log(` Job ${jobId} completed. Sending result to socket: ${socketId}`);
 
   // Emit result back to the specific user who requested it
