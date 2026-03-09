@@ -3,7 +3,7 @@ import IORedis from 'ioredis';
 import fs from 'fs';
 import {executeCode} from './executeCode.js';
 
-// 1. Create a single connection instance
+// connection instance
 const connection = new IORedis({
     host: '127.0.0.1',
     port: 6379,
@@ -20,7 +20,7 @@ try {
     const result = await executeCode(codeToExecute, languageToExecute, jobID);
    console.log(`Job ${jobID} completed. Result:`, result);
 
-    // WHATEVER YOU RETURN HERE becomes the 'returnvalue' in QueueEvents
+    
    return result;
 
 }
@@ -29,7 +29,8 @@ catch (error) {
     throw error;
 }
 
-}, {connection: connection,
+}, {
+    connection: connection, 
     
 }); 
 

@@ -10,10 +10,10 @@ import { Toaster } from 'react-hot-toast';
 const App = () => {
   return (
     <>
-      {/* Ye notifications ke liye */}
-      <Toaster position="top-right" reverseOrder={false} />
+      {}
+      <Toaster position="top-right" reverseOrder={false} /> 
 
-      {/* Ye routing ke liye */}
+      {/* routing  */}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />

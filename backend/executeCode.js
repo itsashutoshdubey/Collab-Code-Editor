@@ -4,7 +4,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 
-// 1. Correct way to get Promise support for exec
 const execPromise = promisify(exec);
 
 
@@ -17,21 +16,16 @@ const __dirname = path.dirname(__filename);
 
 
 
-// exec(command, options, callback);
-//command: The shell command to run.
-//options(optional): Object to configure execution(e.g., cwd, env, maxBuffer).
-   // callback: Function(error, stdout, stderr) called when the command finishes.
+
 
 
 async function executeCommand(dockerCommand, timeout = 5000) {
     try {
-        // The promise-based exec returns an object with stdout and stderr directly
         const { stdout, stderr } = await execPromise(dockerCommand, { timeout: timeout });
 
         return { stdout, stderr };
     } catch (error) {
-        // If the command fails or times out, it throws an error object
-        // which contains the partial stdout/stderr produced before the failure
+        // If the command fails or times out, it throws an error object which contains the partial stdout/stderr produced before the failure
         return {
             stdout: error.stdout || "",
             stderr: error.stderr || error.message,
@@ -41,7 +35,7 @@ async function executeCommand(dockerCommand, timeout = 5000) {
 
 export async function executeCode(code, language, jobID) {
     // creates a directory
-    const jobDir = path.join(__dirname, 'temp', jobID);
+    const jobDir = path.join(__dirname, 'temp', jobID); 
     await fs.mkdir(jobDir, { recursive: true });
 
 
@@ -105,8 +99,7 @@ g++ code.cpp -o a.out: Compiles the code.
         return { status: 'ERROR', output: e.stdout, error: e.stderr };
     }
     finally {
-        // 4. CLEANUP: Delete the entire folder (including a.out and temp files)
-        // Use fs.rm with recursive: true to delete the folder itself
+        //  CLEANUP: Delete the entire folder 
         await fs.rm(jobDir, { recursive: true, force: true }).catch(
             () => console.error(`Failed to clean up directory: ${jobDir}`)
     );

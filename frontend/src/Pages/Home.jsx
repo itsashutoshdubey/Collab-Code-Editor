@@ -26,14 +26,13 @@ const Home = () => {
     e.preventDefault();
     const id = uuidV4();
     setRoomId(id);
-   // console.log(id);
-    //alert(`Created a new room with ID: ${id}`);
+  
     toast.success('Created a new room');
   };
 
   return (
     <div className="home-container">
-      <h1>🚀 Join Your Room</h1>
+      <h1> Join Your Room</h1>
       <div className="form-grid">
         <input
           type="text"
